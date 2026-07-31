@@ -25,7 +25,7 @@ from tenacity import (
 )
 from tenacity.stop import stop_base, stop_never
 
-from ._errors import RequestError
+from ._errors import RequestError, _is_undocumented_status
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -158,11 +158,7 @@ def _download_error(exc: BaseException) -> bool:
 
 
 def _undocumented_error(exc: BaseException) -> bool:
-    return (
-        isinstance(exc, RequestError)
-        and exc.status >= 500
-        and exc.status not in {503, 520, 521}
-    )
+    return isinstance(exc, RequestError) and _is_undocumented_status(exc.status)
 
 
 def _402_error(exc: BaseException) -> bool:

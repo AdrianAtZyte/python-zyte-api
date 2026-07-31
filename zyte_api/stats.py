@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Optional
 import attr
 from runstats import Statistics
 
+from zyte_api._errors import _is_undocumented_status
 from zyte_api.errors import ParsedError
 
 if TYPE_CHECKING:
@@ -91,6 +92,14 @@ class AggStats:
     def n_processed(self) -> float:
         """Total number of processed URLs"""
         return self.n_success + self.n_fatal_errors
+
+    @property
+    def _n_undocumented_errors(self) -> int:
+        return sum(
+            count
+            for status, count in self.status_codes.items()
+            if _is_undocumented_status(status)
+        )
 
 
 @attr.s
