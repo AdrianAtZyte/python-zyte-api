@@ -279,6 +279,39 @@ def test_intype_jsonl_explicit(mockserver):
     )
 
 
+def test_params_txt(mockserver):
+    result = _run(
+        input_="https://a.example",
+        mockserver=mockserver,
+        cli_params=["-p", '{"httpResponseBody": true}'],
+    )
+    assert not result.returncode
+    assert b"browserHtml" not in result.stdout
+    assert b'"httpResponseBody"' in result.stdout
+
+
+def test_params_jsonl(mockserver):
+    result = _run(
+        input_='{"url": "https://a.example", "browserHtml": true}',
+        mockserver=mockserver,
+        cli_params=["-p", '{"browserHtml": false, "httpResponseBody": true}'],
+    )
+    assert not result.returncode
+    assert b'"browserHtml"' in result.stdout
+    assert b'"httpResponseBody"' in result.stdout
+
+
+@pytest.mark.parametrize("value", ("{", "[]"))
+def test_params_invalid(mockserver, value):
+    result = _run(
+        input_="https://a.example",
+        mockserver=mockserver,
+        cli_params=["-p", value],
+    )
+    assert result.returncode
+    assert b"--params/-p" in result.stderr
+
+
 @pytest.mark.flaky(reruns=16)
 def test_limit_and_shuffle(mockserver):
     result = _run(
